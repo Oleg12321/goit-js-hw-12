@@ -24,6 +24,7 @@ myForm.addEventListener('submit', e => {
     loaderBtn.style.display = 'none';
     return;
   }
+  galleryList.innerHTML = '';
 
   requestsData(inputData, page, 20)
     .then(data => {
