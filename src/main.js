@@ -12,9 +12,12 @@ const loaderBtn = document.querySelector('.load-more');
 loaderBtn.style.display = 'none';
 
 let page = 1;
-let perPage = 150;
+let perPage = 15;
 let currentSearchTerm = '';
 
+const lightbox = new SimpleLightbox('.gallery a', {
+  captionDelay: 250,
+});
 myForm.addEventListener('submit', e => {
   e.preventDefault();
   currentSearchTerm = e.target.elements.search.value.trim();
@@ -41,16 +44,13 @@ myForm.addEventListener('submit', e => {
       galleryShow(data.hits, galleryList);
       e.target.elements.search.value = '';
 
-      const lightbox = new SimpleLightbox('.gallery a', {
-        captionDelay: 250,
-      });
+
       lightbox.refresh();
       loaderBtn.style.display = 'block';
     })
     .catch(error => {
-      console.error(error);
       iziToast.error({
-        message: 'Something went wrong. Please try again later.',
+        message: error,
       });
     })
     .finally(() => {
@@ -59,9 +59,7 @@ myForm.addEventListener('submit', e => {
 });
 
 loaderBtn.addEventListener('click', async () => {
-  // Перевірка кількості доступних сторінок перед збільшенням page
   try {
-    // Спочатку отримуємо загальну кількість сторінок
     const initialResponse = await requestsData(currentSearchTerm, 1, perPage);
     const totalPages = Math.ceil(initialResponse.totalHits / perPage);
 
@@ -88,9 +86,6 @@ loaderBtn.addEventListener('click', async () => {
 
     galleryShow(carts.hits, galleryList);
 
-    const lightbox = new SimpleLightbox('.gallery a', {
-      captionDelay: 250,
-    });
     lightbox.refresh();
 
     const galleryItems = document.querySelectorAll('.gallery-item');
@@ -102,14 +97,10 @@ loaderBtn.addEventListener('click', async () => {
       });
     }
   } catch (error) {
-    console.error(error);
     iziToast.error({
-      message: 'Something went wrong. Please try again later.',
+      message: error,
     });
   } finally {
     loader.style.display = 'none';
   }
 });
-
-
-
