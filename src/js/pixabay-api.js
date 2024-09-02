@@ -15,13 +15,23 @@ export const requestsData = async (inputData, page, perPage) => {
       per_page: perPage,
       page: page,
     });
+
     const response = await axios.get(`?${params}`);
 
-    if (response.data.hits.length === 0) {
+    if (response.data.totalHits === 0) {
       iziToast.error({
         message:
           'Sorry, there are no images matching your search query. Please try again!',
       });
+      return response.data; // Повертаємо порожній об'єкт даних
+    }
+
+    const totalPages = Math.ceil(response.data.totalHits / perPage);
+    if (page > totalPages) {
+      iziToast.info({
+        message: "We're sorry, but you've reached the end of search results.",
+      });
+      return { hits: [] }; // Повертаємо порожній масив hits, щоб уникнути зайвих запитів
     }
 
     return response.data;
