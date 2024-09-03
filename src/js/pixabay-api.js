@@ -23,7 +23,7 @@ export const requestsData = async (inputData, page, perPage) => {
         message:
           'Sorry, there are no images matching your search query. Please try again!',
       });
-      return response.data; // Повертаємо порожній об'єкт даних
+      return { hits: [] };
     }
 
     const totalPages = Math.ceil(response.data.totalHits / perPage);

@@ -18,6 +18,7 @@ let currentSearchTerm = '';
 const lightbox = new SimpleLightbox('.gallery a', {
   captionDelay: 250,
 });
+
 myForm.addEventListener('submit', e => {
   e.preventDefault();
   currentSearchTerm = e.target.elements.search.value.trim();
@@ -43,8 +44,6 @@ myForm.addEventListener('submit', e => {
       }
       galleryShow(data.hits, galleryList);
       e.target.elements.search.value = '';
-
-
       lightbox.refresh();
       loaderBtn.style.display = 'block';
     })
@@ -60,41 +59,32 @@ myForm.addEventListener('submit', e => {
 
 loaderBtn.addEventListener('click', async () => {
   try {
-    const initialResponse = await requestsData(currentSearchTerm, 1, perPage);
-    const totalPages = Math.ceil(initialResponse.totalHits / perPage);
-
-    if (page >= totalPages) {
-      iziToast.info({
-        message: "We're sorry, but you've reached the end of search results.",
-      });
-      loaderBtn.style.display = 'none';
-      return;
-    }
-
     loader.style.display = 'inline-block';
-    page += 1;
 
-    const carts = await requestsData(currentSearchTerm, page, perPage);
+    const carts = await requestsData(currentSearchTerm, page + 1, perPage); // Завантажуємо дані наступної сторінки
+    const totalPages = Math.ceil(carts.totalHits / perPage);
 
-    if (carts.hits.length === 0) {
+    if (carts.hits.length > 0) {
+      galleryShow(carts.hits, galleryList);
+      lightbox.refresh();
+
+      const galleryItems = document.querySelectorAll('.gallery-item');
+      if (galleryItems.length > 0) {
+        const itemHeight = galleryItems[0].getBoundingClientRect().height;
+        window.scrollBy({
+          top: itemHeight * 2,
+          behavior: 'smooth',
+        });
+      }
+
+      page += 1; // Збільшуємо номер сторінки тільки після успішного завантаження
+    }
+
+    if (page >= totalPages || carts.hits.length === 0) {
       iziToast.info({
         message: "We're sorry, but you've reached the end of search results.",
       });
       loaderBtn.style.display = 'none';
-      return;
-    }
-
-    galleryShow(carts.hits, galleryList);
-
-    lightbox.refresh();
-
-    const galleryItems = document.querySelectorAll('.gallery-item');
-    if (galleryItems.length > 0) {
-      const itemHeight = galleryItems[0].getBoundingClientRect().height;
-      window.scrollBy({
-        top: itemHeight * 2,
-        behavior: 'smooth',
-      });
     }
   } catch (error) {
     iziToast.error({
